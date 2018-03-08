@@ -30,14 +30,13 @@ cc_defaults {
         "binary_data_utils.cc",
         "buffer_reader.cc",
         "buffer_writer.cc",
-        // "compat/log_level.cc",
         "data_reader.cc",
         "data_writer.cc",
         "dso.cc",
         "file_reader.cc",
         "file_utils.cc",
         "huge_page_deducer.cc",
-        "mybase/base/logging.cc",
+        "androidbase/base/logging.cc",
         "perf_option_parser.cc",
         "perf_data_utils.cc",
         "perf_parser.cc",
@@ -56,7 +55,10 @@ cc_defaults {
     ],
     local_include_dirs: [
         "compat/non_cros",
-        "mybase",
+        "androidbase",
+    ],
+    static_libs: [
+        "libbase",
     ],
     whole_static_libs: [
         "libcrypto",             // For MD5.
@@ -66,7 +68,7 @@ cc_defaults {
 
     export_include_dirs: [
         ".",
-        "mybase",
+        "androidbase",
     ],
     proto: {
         canonical_path_from_root: true,
@@ -162,6 +164,8 @@ cc_test {
     enabled: false,
 
     static_libs: [
+        "libbase",
+        "liblog",
         "libprotobuf-cpp-lite",
         "libquipper",
     ],
