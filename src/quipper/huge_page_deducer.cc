@@ -189,8 +189,9 @@ void UpdateRangeFromNext(const MMapRange& range, const MMapRange& next_range,
 
     // Replace "//anon" with a regular name if possible.
     if (IsAnon(*mmap)) {
-      CHECK_EQ(mmap->pgoff(), 0) << "//anon should have offset=0 for mmap"
-                                 << event->ShortDebugString();
+      // ANDROID-CHANGED: protobuf-lite.
+      CHECK_EQ(mmap->pgoff(), 0u) << "//anon should have offset=0 for mmap";
+      //                          << event->ShortDebugString();
       SetMmapFilename(event, src.filename(), src.filename_md5_prefix());
     }
 
