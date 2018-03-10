@@ -85,6 +85,12 @@ void WriteElfWithMultipleBuildids(
   int fd = open(filename.data(), O_WRONLY | O_CREAT | O_TRUNC, 0660);
   CHECK_GE(fd, 0) << strerror(errno);
 
+  // ANDROID-CHANGED: Ensure libelf is initialized, as dso_android doesn't.
+  {
+    const unsigned int kElfVersionNone = EV_NONE;  // correctly typed.
+    CHECK_NE(kElfVersionNone, elf_version(EV_CURRENT)) << elf_errmsg(-1);
+  }
+
   Elf *elf = elf_begin(fd, ELF_C_WRITE, nullptr);
   CHECK(elf) << elf_errmsg(-1);
   Elf64_Ehdr *elf_header = elf64_newehdr(elf);

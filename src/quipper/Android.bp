@@ -32,7 +32,7 @@ cc_defaults {
         "buffer_writer.cc",
         "data_reader.cc",
         "data_writer.cc",
-        "dso.cc",
+        "dso_android.cc",               // Android-modified, rely on simpleperf/LLVM.
         "file_reader.cc",
         "file_utils.cc",
         "huge_page_deducer.cc",
@@ -59,11 +59,10 @@ cc_defaults {
     ],
     static_libs: [
         "libbase",
+        "libsimpleperf_elf_read",
     ],
     whole_static_libs: [
-        "libcrypto",             // For MD5.
-        "libelf",                // For gelf.h, elf_version, ...
-        "libz",                  // For libelf.
+        "libcrypto",  // For MD5.
     ],
 
     export_include_dirs: [
@@ -86,7 +85,6 @@ cc_library_static {
     name: "libquipper",
     defaults: [ "libquipper_defaults" ],
     host_supported: true,
-    enabled: false,
 
     proto: {
         type: "lite",
@@ -100,7 +98,6 @@ cc_library_static {
     name: "libquipper-full",
     defaults: [ "libquipper_defaults" ],
     host_supported: true,
-    enabled: false,
 
     srcs: [
         "conversion_utils.cc",
@@ -116,32 +113,15 @@ cc_library_static {
 
 cc_defaults {
     name: "quipper_test_defaults",
+    host_supported: true,
     srcs: [
         // Independent test infra.
-        "dso_test_utils.cc",
         "perf_test_files.cc",
         "test_perf_data.cc",
         "test_runner.cc",
-
-        // Independent tests.
-        "address_mapper_test.cc",
-        "binary_data_utils_test.cc",
-        "buffer_reader_test.cc",
-        "buffer_writer_test.cc",
-        "dso_test.cc",
-        "file_reader_test.cc",
-        "perf_data_utils_test.cc",
-        "perf_option_parser_test.cc",
-        "perf_stat_parser_test.cc",
-        "run_command_test.cc",
-        "sample_info_reader_test.cc",
-        "scoped_temp_path_test.cc",
     ],
     local_include_dirs: [
         "compat/non_cros",
-    ],
-    static_libs: [
-        "libcap",     // For cap_get_proc etc.
     ],
     cflags: [
         "-Wno-ignored-qualifiers",
@@ -150,6 +130,9 @@ cc_defaults {
         "-Wno-unused",
         "-Wno-unused-parameter",
     ],
+    static_libs: [
+        "libsimpleperf_elf_read",
+    ],
     target: {
         darwin: {
             enabled: false,
@@ -157,11 +140,29 @@ cc_defaults {
     },
 }
 
+cc_defaults {
+    name: "quipper_android_test_defaults",
+    defaults: ["quipper_test_defaults"],
+    srcs: [
+        // Independent tests.
+        "address_mapper_test.cc",
+        "binary_data_utils_test.cc",
+        "buffer_reader_test.cc",
+        "buffer_writer_test.cc",
+        "file_reader_test.cc",
+        "perf_data_utils_test.cc",
+        "perf_option_parser_test.cc",
+        "perf_stat_parser_test.cc",
+        "run_command_test.cc",
+        "sample_info_reader_test.cc",
+        "scoped_temp_path_test.cc",
+    ],
+}
+
 cc_test {
     name: "quipper_unit_tests",
-    defaults: [ "quipper_test_defaults" ],
+    defaults: [ "quipper_android_test_defaults" ],
     host_supported: true,
-    enabled: false,
 
     static_libs: [
         "libbase",
@@ -173,23 +174,68 @@ cc_test {
 
 cc_test {
     name: "quipper-full_unit_tests",
-    defaults: [ "quipper_test_defaults" ],
+    defaults: [ "quipper_android_test_defaults" ],
     host_supported: true,
-    enabled: false,
 
     srcs: [
         "test_utils.cc",
 
         "conversion_utils_test.cc",
-        "perf_parser_test.cc",
         "perf_reader_test.cc",
         "perf_serializer_test.cc",
     ],
 
     static_libs: [
         "libquipper-full",
+        "libutils",
+    ],
+    shared_libs: [
+        "libbase",
+        "libprotobuf-cpp-full",
+    ],
+
+    target: {
+        // Required for LLVM in libsimpleperf_elf_read.
+        linux_glibc: {
+            host_ldlibs: [
+                "-lncurses",
+            ],
+        },
+    },
+}
+
+cc_test {
+    name: "quipper_libelf_test",
+    defaults: [ "quipper_test_defaults" ],
+    device_supported: false,
+    enabled: false,
+
+    srcs: [
+        "dso_test_utils.cc",
+        "test_utils.cc",
+
+        "dso_test.cc",
+        "perf_parser_test.cc",
+    ],
+
+    static_libs: [
+        "libcap",           // For cap_get_proc etc.
+        "libelf",           // For gelf.h, elf_version, ...
+        "libquipper-full",
+        "libutils",
+        "libz",             // For libelf.
     ],
     shared_libs: [
         "libprotobuf-cpp-full",
     ],
+
+    target: {
+        // Required for LLVM in libsimpleperf_elf_read.
+        linux_glibc: {
+            host_ldlibs: [
+                "-lncurses",
+            ],
+        },
+    },
 }
+
