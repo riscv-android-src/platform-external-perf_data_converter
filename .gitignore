@@ -3,7 +3,6 @@
 *.d
 *.o
 
-quipper
 perf_converter
 perf_to_profile
 intervalmap_test
