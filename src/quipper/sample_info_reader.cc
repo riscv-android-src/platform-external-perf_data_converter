@@ -267,16 +267,35 @@ size_t ReadPerfSampleFromData(const event_t& event,
   // { u64                   abi; # enum perf_sample_regs_abi
   //   u64                   regs[weight(mask)]; } && PERF_SAMPLE_REGS_USER
   if (sample_fields & PERF_SAMPLE_REGS_USER) {
-    LOG(ERROR) << "PERF_SAMPLE_REGS_USER is not yet supported.";
-    return reader.Tell();
+    VLOG(1) << "Skipping PERF_SAMPLE_REGS_USER data.";
+    u64 abi;
+    if (!reader.ReadUint64(&abi)) {
+      return false;
+    }
+    size_t weight = abi == 0 ? 0 : __builtin_popcountll(attr.sample_regs_user);
+    u64 regs[64];
+    if (weight > 0 && !reader.ReadData(weight * sizeof(u64), regs)) {
+      return false;
+    }
   }
 
   // { u64                   size;
   //   char                  data[size];
   //   u64                   dyn_size; } && PERF_SAMPLE_STACK_USER
   if (sample_fields & PERF_SAMPLE_STACK_USER) {
-    LOG(ERROR) << "PERF_SAMPLE_STACK_USER is not yet supported.";
-    return reader.Tell();
+    VLOG(1) << "Skipping PERF_SAMPLE_STACK_USER data.";
+    u64 size;
+    if (!reader.ReadUint64(&size)) {
+      return false;
+    }
+    if (size != 0) {
+      std::unique_ptr<char[]> data(new char[size]);
+      if (!reader.ReadData(size, data.get())) {
+        return false;
+      }
+      u64 dyn_size;
+      reader.ReadUint64(&dyn_size);
+    }
   }
 
   // { u64                   weight;   } && PERF_SAMPLE_WEIGHT
