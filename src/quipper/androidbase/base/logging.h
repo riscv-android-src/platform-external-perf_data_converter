@@ -24,7 +24,7 @@ extern bool gVlogEnabled;
 
 #define VLOG(level) ::logging::gVlogEnabled && LOG(INFO)
 
-#define DLOG(x) LOG(x)
-#define DVLOG(x) VLOG(x)
+#define DLOG(x) android::base::kEnableDChecks && LOG(x)
+#define DVLOG(x) android::base::kEnableDChecks && VLOG(x)
 
 #endif  // CHROMIUMOS_WIDE_PROFILING_MYBASE_BASE_LOGGING_H_
