@@ -253,7 +253,7 @@ bool PerfParser::ProcessEvents() {
 
   // Print stats collected from parsing.
   // clang-format off
-  LOG(INFO) << "Parser processed: "
+  VLOG(1)   << "Parser processed: "
             << stats_.num_mmap_events << " MMAP/MMAP2 events, "
             << stats_.num_comm_events << " COMM events, "
             << stats_.num_fork_events << " FORK events, "
