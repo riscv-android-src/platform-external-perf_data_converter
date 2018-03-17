@@ -138,6 +138,9 @@ cc_defaults {
         darwin: {
             enabled: false,
         },
+        windows: {
+            enabled: false,
+        }
     },
 }
 
@@ -227,6 +230,7 @@ cc_test {
         "libz",             // For libelf.
     ],
     shared_libs: [
+        "libbase",
         "libprotobuf-cpp-full",
     ],
 
