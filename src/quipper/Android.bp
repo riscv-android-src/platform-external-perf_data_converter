@@ -29,6 +29,7 @@ filegroup {
 
 cc_defaults {
     name: "libquipper_defaults",
+    defaults: ["libsimpleperf_elf_read_static_reqs_defaults"],
 
     cflags: [
         "-Wno-unused",
@@ -127,6 +128,7 @@ cc_library_static {
 
 cc_defaults {
     name: "quipper_test_defaults",
+    defaults: ["libsimpleperf_elf_read_static_reqs_defaults"],
     host_supported: true,
     srcs: [
         // Independent test infra.
@@ -208,6 +210,7 @@ cc_test {
     ],
     shared_libs: [
         "libbase",
+        "liblog",
         "libprotobuf-cpp-full",
     ],
 
